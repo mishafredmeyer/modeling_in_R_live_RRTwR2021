@@ -63,6 +63,10 @@ bike_linear_data <- bike_data %>%
 # Challenge Number 1
 
 
+# Getting predictions from a linear model for the 
+# data values contained in the dataset
+
+
 # Visualize residual deviation from the modeled predictions 3 ways
 
 # 1. Visualize model and points 
