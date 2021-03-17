@@ -226,8 +226,58 @@ mixed_bike_data <- bike_data %>%
 summary(mixed_bike_data)
 
 # Build the model
+mixed_type_model <- lm(formula = cnt ~ feeling_temperature*humidity*windiness*weather_type,
+                       data = mixed_bike_data)
 
+summary(mixed_type_model)
 
+ggplot(data = mixed_bike_data, 
+       mapping = aes(x = humidity,
+                     y = cnt)) +
+  geom_smooth(method = "lm", se = TRUE) +
+  geom_point(alpha = 0.2) +
+  facet_grid(~weather_type)
+
+ggplot(data = mixed_bike_data, 
+       mapping = aes(x = windiness,
+                     y = cnt)) +
+  geom_smooth(method = "lm", se = TRUE) +
+  geom_point(alpha = 0.2) +
+  facet_grid(~weather_type)
+
+ggplot(data = mixed_bike_data, 
+       mapping = aes(x = feeling_temperature,
+                     y = cnt)) +
+  geom_smooth(method = "lm", se = TRUE) +
+  geom_point(alpha = 0.2) +
+  facet_grid(~weather_type)
+
+ggplot(data = mixed_bike_data,
+       mapping = aes(x = feeling_temperature,
+                     y = windiness,
+                     color = cnt)) +
+  geom_point(alpha = 0.7) +
+  scale_color_viridis_c() +
+  facet_grid(~weather_type) +
+  theme_minimal()
+
+ggplot(data = mixed_bike_data,
+       mapping = aes(x = feeling_temperature,
+                     y = humidity,
+                     color = cnt)) +
+  geom_point(alpha = 0.7) +
+  scale_color_viridis_c() +
+  facet_grid(~weather_type) +
+  theme_minimal()
+
+ggplot(data = mixed_bike_data,
+       mapping = aes(x = windiness,
+                     y = humidity,
+                     color = cnt)) +
+  geom_point(alpha = 0.7) +
+  scale_color_viridis_c() +
+  facet_grid(~weather_type) +
+  theme_minimal()
 
 # 3. Non-Linear Modeling --------------------------------------------------
 
@@ -240,16 +290,67 @@ bike_nonlinear_data <- bike_data %>%
   select(feeling_temperature, cnt)
 
 # Remind ourselves what these data looked like
-
-
-# Build the model
-
-# To build a polynomial equation without second and first order 
-# terms, followup this workflow:
+ggplot(bike_nonlinear_data, aes(feeling_temperature, cnt)) +
+  geom_point()
 
 # Build the model
 
+polynomial_bike_model <- lm(formula = cnt ~ poly(x = feeling_temperature, degree = 3),
+                            data = bike_nonlinear_data)
 
+summary(polynomial_bike_model)
+
+# Quick Challenge: Create a dataset with feeling_temperature ranges from 0 to 45 by 0.25 increments
+# And predict bike ridership using the cubic function we just created. 
+
+prediction_data <- data.frame(feeling_temperature = seq(from = 0,
+                                                        to = 45,
+                                                        by = 0.25))
+
+head(prediction_data)
+
+prediction_data$predicted_cnt <- predict(object = polynomial_bike_model,
+                                        newdata = prediction_data)
+head(prediction_data)
+
+ggplot() +
+  geom_point(data = bike_data, mapping = aes(x = 50*atemp,
+                                             y = cnt),
+             alpha = 0.4) +
+  geom_point(data = prediction_data, mapping = aes(x = feeling_temperature,
+                                                   y = predicted_cnt),
+             shape = 18, color = "blue") +
+  xlab("Feeling Temperature") +
+  ylab("Bikes Rentals") +
+  theme_minimal()
+
+# Build the model
+
+polynomial_bike_model <- lm(formula = cnt ~ poly(x = I(feeling_temperature^3)),
+                            data = bike_nonlinear_data)
+
+summary(polynomial_bike_model)
+
+prediction_data <- data.frame(feeling_temperature = seq(from = 0,
+                                                        to = 45,
+                                                        by = 0.25))
+
+head(prediction_data)
+
+prediction_data$predicted_cnt <- predict(object = polynomial_bike_model,
+                                         newdata = prediction_data)
+head(prediction_data)
+
+ggplot() +
+  geom_point(data = bike_data, mapping = aes(x = 50*atemp,
+                                             y = cnt),
+             alpha = 0.4) +
+  geom_point(data = prediction_data, mapping = aes(x = feeling_temperature,
+                                                   y = predicted_cnt),
+             shape = 18, color = "blue") +
+  xlab("Feeling Temperature") +
+  ylab("Bikes Rentals") +
+  theme_minimal()
 
 # 3.2 General Additive Models ---------------------------------------------
 
@@ -260,7 +361,13 @@ bike_nonlinear_data <- bike_data %>%
 # where gamma closer to zero is very wiggly, and gamma greater than 1
 # less wiggly. 
 
+bike_gam_model <- gam(cnt ~ s(feeling_temperature),
+                      data = bike_nonlinear_data,
+                      method = "REML", gamma = 10)
 
+summary(bike_gam_model)
+
+plot(bike_gam_model)
 
 # 3.3 Logistic Regresssion ------------------------------------------------
 
@@ -279,4 +386,13 @@ bike_data %>%
 
 # Build the model 
 
-## Challenge 4
+logistic_model <- glm(formula = workingday ~ registered, 
+                      data = bike_data,
+                      family = binomial())
+summary(logistic_model)
+
+## Challenge 4: Knowing what we've learned, plot this model for values of 
+## 0 through 7000 by steps of 10, and add the fitted model probabilities 
+## to the plot. (Hint: values from a logistic are as log odds, so check 
+## documentation for how to convert this automatically in the "predict" 
+## function. 
