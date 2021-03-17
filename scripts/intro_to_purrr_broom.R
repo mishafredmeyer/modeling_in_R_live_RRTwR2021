@@ -19,7 +19,10 @@ bike_data <- read.csv("../data/day.csv",
 # 1. A primer on the broom package ----------------------------------------
 
 # Format some data
-
+bike_data_cleaned <- bike_data %>%
+  mutate(weather_type = factor(weathersit,
+                               levels = c(1,2,3,4),
+                               labels = c("Clear", "Cloudy", "Rainy", "Snowy")))
 
 # Build the linear model
 
