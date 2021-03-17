@@ -152,14 +152,21 @@ ggplot() +
 
 # Create a new dataset for multiple linear regression 
 # with continuous variables. 
+multiple_bike_data <- bike_data %>%
+  mutate(feeling_temperature = atemp * 50,
+         humidity = hum * 100,
+         windiness = windspeed * 67) %>%
+  select(feeling_temperature, humidity, windiness, cnt)
 
+head(multiple_bike_data)
 
 # First make a model where interactions are considered. 
+multiple_linear_model <- lm(formula = cnt ~ feeling_temperature*humidity*windiness,
+                            data = multiple_bike_data)
 
-
-
+summary(multiple_linear_model)
 # Assess the pairs plot for cross-correlations
-
+pairs(multiple_bike_data[ , 1:3])
 
 # Create a function to put correlation value in the upper panel.
 # This function can be found in the documentation for pairs.
@@ -175,16 +182,31 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
 }
 
 # Rerun pairs with upper panel showing correlation values.
-
+pairs(multiple_bike_data[ , 1:3], upper.panel = panel.cor)
 
 # Second make a model where interactions are NOT considered. 
+multiple_linear_model_no_inter <- lm(formula = cnt ~ feeling_temperature + humidity + windiness,
+                                     data = multiple_bike_data)
 
-
+summary(multiple_linear_model_no_inter)
 # Calculate the AIC of each linear model
 # i.e., all interactions vs no interactions
-
+AIC(multiple_linear_model)
+AIC(multiple_linear_model_no_inter)
 
 ## Challenge Number 3
+## Challenge Number 3a: Make a model that considers feeling_temperature,
+## humidity, and the interaction of humidity and windiness on cnt
+## Challenge Number 3b: Is this model, better, worse, or 
+## effectively the same as the previous models based on model performance?
+
+multiple_linear_model_spec_inter <- lm(formula = cnt ~ feeling_temperature + humidity + humidity:windiness,
+                                       data = multiple_bike_data)
+
+summary(multiple_linear_model_spec_inter)
+AIC(multiple_linear_model_spec_inter)
+AIC(multiple_linear_model)
+AIC(multiple_linear_model_no_inter)
 
 # Mutliple linear regression with continuous and categorical predictors
 
